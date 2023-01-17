@@ -20,6 +20,7 @@ class TypeScriptCompiler {
           noEmitOnError: true,
           target: "esnext",
           module: "commonjs",
+          useCaseSensitiveFileNames: true,
         };
         try {
             loader.create("Compiling","wait...");
@@ -45,10 +46,10 @@ class TypeScriptCompiler {
                 window.toast(`TypeScript compilation completed successfully.`,3000);
             }
         } catch (e) {
+            loader.destroy();
             window.toast(e,4000)
         }
         
-        window.alert('hi')
     }
 
     async destroy() {
