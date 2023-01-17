@@ -2,6 +2,7 @@ import plugin from '../plugin.json';
 const ts = require('typescript');
 
 const loader = acode.require("loader");
+const fsOperation = acode.require("fsOperation");
 
 class TypeScriptCompiler {
     
@@ -24,7 +25,35 @@ class TypeScriptCompiler {
         };
         try {
             loader.create("Compiling","wait...");
-            const program = ts.createProgram([location+name], config);
+            const createEmitAndSemanticDiagnosticsBuilderProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;
+            const { emitSkipped, diagnostics } = createEmitAndSemanticDiagnosticsBuilderProgram(
+                [location+name],
+                config,
+                undefined,
+                undefined,
+                async (filePath, content) => {
+                    await fsOperation(filePath).writeFile(content);
+                }
+            );
+            loader.destroy();
+            window.alert(diagnostics)
+            window.alert(emitSkipped)
+            if (diagnostics.length > 0) {
+                let errorLogs = '';
+                diagnostics.forEach((diagnostic) => {
+                    errorLogs += `${diagnostic.file.fileName} (${diagnostic.start}): ${diagnostic.messageText}\n`;
+                });
+                //window.alert(errorLogs);
+            }
+            if (emitSkipped) {
+                loader.destroy();
+                window.toast(`Compilation failed.`,3000);
+                window.alert(errorLogs)
+            }else{
+                loader.destroy();
+                window.toast(`TypeScript compilation completed successfully.`,3000);
+            }
+            /*const program = ts.createProgram([location+name], config);
             const emitResult = program.emit();
             const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
             let errorLogs;
@@ -44,7 +73,7 @@ class TypeScriptCompiler {
             } else {
                 loader.destroy();
                 window.toast(`TypeScript compilation completed successfully.`,3000);
-            }
+            }*/
         } catch (e) {
             loader.destroy();
             window.toast(e,4000)
