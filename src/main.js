@@ -4,13 +4,6 @@ const ts = require('typescript');
 const fsOperation = acode.require("fsOperation");
 
 class TypeScriptCompiler {
-    $config = {
-      strict: true,
-      noEmitOnError: true,
-      target: "esnext",
-      module: "commonjs",
-    };
-    
     
     async init() {
         editorManager.on('save-file', this.compile.bind(this));
@@ -18,10 +11,18 @@ class TypeScriptCompiler {
     
     async compile(file){
         const {location, name, session } = file;
-        window.alert(location)
         if (!location || !/\.(ts)$/.test(name)) return;
         if(/\.d\.ts$/.test(name)) return;
-        const program = ts.createProgram([location+name], this.$config);
+        window.alert(location+name)
+        window.toast("Starts compilation...",4000)
+        const config = {
+          strict: true,
+          noEmitOnError: true,
+          target: "esnext",
+          module: "commonjs",
+        };
+        const program = ts.createProgram([location+name], config);
+        window.alert(program)
         const emitResult = program.emit();
         const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
         let errorLogs;
@@ -40,6 +41,7 @@ class TypeScriptCompiler {
         } else {
             window.toast(`TypeScript compilation completed successfully.`,3000);
         }
+        window.alert('hi')
     }
 
     async destroy() {
